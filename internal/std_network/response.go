@@ -1,7 +1,9 @@
-package network
+package std_network
 
 import (
+	"errors"
 	"io"
+	"net/http"
 
 	"github.com/rylenko/guide/internal/network"
 )
@@ -11,8 +13,8 @@ import (
 //
 // Please note that the body is a stream and needs to be closed.
 type Response struct {
-	statusCode int
 	body io.ReadCloser
+	statusCode int
 }
 
 // Returns body stream of response.
@@ -20,16 +22,23 @@ func (response *Response) Body() io.ReadCloser {
 	return response.body
 }
 
-// Returns the status code of response.
-func (response *Response) StatusCode() int {
-	return response.statusCode
+// Checks that response contains HTTP error code.
+func (response *Response) Error() error {
+	switch response.statusCode {
+	case http.StatusOK:
+		return nil
+	case http.StatusUnauthorized:
+		return errors.New("invalid API key")
+	default:
+		return errors.New(http.StatusText(response.statusCode))
+	}
 }
 
 // Creates a new instance of response using passed standard HTTP response.
-func NewResponse(response: *http.Response) *Response {
+func NewResponse(response *http.Response) *Response {
 	return &Response{
-		statusCode: response.StatusCode,
 		body: response.Body,
+		statusCode: response.StatusCode,
 	}
 }
 

@@ -1,6 +1,7 @@
 package std_network
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/rylenko/guide/internal/network"
@@ -15,16 +16,16 @@ func (requester *Requester) Get(url string) (network.Response, error) {
 	// Send GET request using standard HTTP library.
 	response, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("http.Get(\"%s\"): %v", err)
+		return nil, fmt.Errorf("http.Get(\"%s\"): %v", err)
 	}
 
 	return NewResponse(response), nil
 }
 
 // Creates a new instance of standard requester.
-func NewRequester() *StdRequester {
+func NewRequester() *Requester {
 	return &Requester{}
 }
 
 // Ensure that standard requester implements requester interface.
-var _ network.Requester = (*StdRequester)(nil)
+var _ network.Requester = (*Requester)(nil)

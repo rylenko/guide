@@ -1,23 +1,12 @@
 package globe
 
+import "fmt"
+
 // Location is an interface for storing data about a location on a map:
-// point and address components.
+// point and a string representation of address components.
 type Location interface {
+	fmt.Stringer
+
 	// Point of the location on the map.
 	Point() Point
-
-	// Country of the location.
-	Country() string
-
-	// City of the location.
-	City() string
-
-	// State of the location.
-	State() string
-
-	// Street of the location.
-	Street() string
-
-	// House number of the location.
-	HouseNumber() string
 }

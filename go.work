@@ -1,0 +1,12 @@
+go 1.22.5
+
+use (
+	./cmd/guide
+	./internal/geocode
+	./internal/gh_geocode
+	./internal/gh_globe
+	./internal/globe
+	./internal/launch
+	./internal/network
+	./internal/std_network
+)
