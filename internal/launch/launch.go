@@ -88,7 +88,7 @@ func suggestLocations(
 	for i, location := range locations {
 		fmt.Fprintf(output, "[%d] %s.\n", i, location.String())
 	}
-	fmt.Fprintln(output, "")
+	fmt.Fprintln(output)
 
 	for {
 		// Prompt location input.

@@ -25,7 +25,7 @@ func (point *Point) Long() float64 {
 
 // String representation of the point.
 func (point *Point) String() string {
-	return fmt.Sprintf("%f, %f", point.Latitude, point.Longitude)
+	return fmt.Sprint(point.Latitude, ", ", point.Longitude)
 }
 
 // Ensure that point DTO implements point interface.

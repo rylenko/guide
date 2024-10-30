@@ -37,7 +37,7 @@ func (location *Location) String() string {
 	// Append address components to the string builder.
 	for _, component := range components {
 		if component != "" {
-			fmt.Fprintf(&stringBuilder, "%s, ", component)
+			fmt.Fprint(&stringBuilder, component, ", ")
 		}
 	}
 
