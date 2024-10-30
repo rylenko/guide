@@ -15,6 +15,6 @@ func main() {
 	geocoder := gh_geocode.NewGeocoder(std_network.NewRequester(), APIKey)
 
 	if err := launch.Launch(geocoder, os.Stdin, os.Stdout); err != nil {
-		log.Fatalf("Failed to launch: %v", err)
+		log.Fatal("Failed to launch: ", err)
 	}
 }

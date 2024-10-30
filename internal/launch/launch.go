@@ -2,6 +2,7 @@ package launch
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -19,17 +20,17 @@ func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
 	for {
 		// Try to read place input.
 		place, err := readPlace(placeReader, output)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("read place input: %v", err)
+			return fmt.Errorf("read place input: %w", err)
 		}
 
 		// Try to geocode input place.
 		locations, err := geocoder.Geocode(place)
 		if err != nil {
-			return fmt.Errorf("Geocode(\"%s\"): %v", place, err)
+			return fmt.Errorf("Geocode(\"%s\"): %w", place, err)
 		}
 		// Prompt another place if no locations found.
 		if len(locations) == 0 {
@@ -39,11 +40,11 @@ func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
 
 		// Try to suggest received locations to the user.
 		selectedLocation, err := suggestLocations(placeReader, output, locations)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("suggest locations of %s: %v", place, err)
+			return fmt.Errorf("suggest locations of %s: %w", place, err)
 		}
 
 		fmt.Fprintf(output, "\nSelected location: %s.\n\n", selectedLocation.String())
@@ -53,8 +54,6 @@ func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
 }
 
 // Prompts for and reads place input until a non-blank place is entered.
-//
-// Returns io.EOF error if end of file.
 func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 	for {
 		// Print the place prompt to the user.
@@ -62,11 +61,8 @@ func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 
 		// Try to read place to guide from input.
 		place, err := reader.ReadString('\n')
-		if err == io.EOF {
-			return "", err
-		}
 		if err != nil {
-			return "", fmt.Errorf("ReadString('\n'): %v", err)
+			return "", fmt.Errorf("ReadString('\n'): %w", err)
 		}
 
 		// Trim newline character from input place and return it if non-blank.
@@ -78,8 +74,6 @@ func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 }
 
 // Prints all locations to the output to further select the desired location.
-//
-// Returns io.EOF error if end of file.
 func suggestLocations(
 		input *bufio.Reader,
 		output *os.File,
@@ -96,11 +90,8 @@ func suggestLocations(
 
 		// Read selected location index as string.
 		locationIndexStr, err := input.ReadString('\n')
-		if err == io.EOF {
-			return nil, err
-		}
 		if err != nil {
-			return nil, fmt.Errorf("ReadString('\n'): %v", err)
+			return nil, fmt.Errorf("ReadString('\n'): %w", err)
 		}
 		// Trim newline character from index input.
 		locationIndexStr = strings.TrimSuffix(locationIndexStr, "\n")

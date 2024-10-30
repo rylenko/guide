@@ -24,13 +24,13 @@ func (geocoder *Geocoder) Geocode(query string) ([]globe.Location, error) {
 	// Sends request to the API endpoint to receive geocoder response.
 	response, err := geocoder.sendRequest(query)
 	if err != nil {
-		return nil, fmt.Errorf("sendRequest(\"%s\"): %v", query, err)
+		return nil, fmt.Errorf("sendRequest(\"%s\"): %w", query, err)
 	}
 	defer response.Body().Close()
 
 	// Check that response contain errors.
 	if err := response.Error(); err != nil {
-		return nil, fmt.Errorf("response error with query \"%s\": %v", query, err)
+		return nil, fmt.Errorf("response error with query \"%s\": %w", query, err)
 	}
 
 	// Create new decoder to decode response's JSON.
@@ -39,7 +39,7 @@ func (geocoder *Geocoder) Geocode(query string) ([]globe.Location, error) {
 	// Decode JSON response body into DTO.
 	var locations gh_globe.Locations
 	if err := decoder.Decode(&locations); err != nil {
-		return nil, fmt.Errorf("json Decode(): %v", err)
+		return nil, fmt.Errorf("json Decode(): %w", err)
 	}
 
 	// Convert slice of location DTO to location interface.
@@ -58,7 +58,7 @@ func (geocoder *Geocoder) buildURL(query string) (string, error) {
 	// Try to parse base endpoint URL.
 	u, err := url.Parse(endpointURL)
 	if err != nil {
-		return "", fmt.Errorf("parse endpoint URL %s: %v", endpointURL, err)
+		return "", fmt.Errorf("parse endpoint URL %s: %w", endpointURL, err)
 	}
 
 	// Add API key and query parameter values to the parsed URL.
@@ -76,13 +76,13 @@ func (geocoder *Geocoder) sendRequest(
 	// Build URL with accepted query.
 	url, err := geocoder.buildURL(query)
 	if err != nil {
-		return nil, fmt.Errorf("buildURL(\"%s\"): %v", query, err)
+		return nil, fmt.Errorf("buildURL(\"%s\"): %w", query, err)
 	}
 
 	// Send get request to built URL and receive a response.
 	response, err := geocoder.requester.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("requester.Get(\"%s\"): %v", url, err)
+		return nil, fmt.Errorf("requester.Get(\"%s\"): %w", url, err)
 	}
 	return response, nil
 }
