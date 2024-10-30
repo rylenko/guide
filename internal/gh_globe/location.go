@@ -34,6 +34,10 @@ func (location *Location) String() string {
 		location.City,
 		location.Street,
 		location.HouseNumber}
+
+	// Grow string builder to reduce reallocations.
+	stringBuilder.Grow(len(components))
+
 	// Append address components to the string builder.
 	for _, component := range components {
 		if component != "" {
