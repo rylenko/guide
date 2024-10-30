@@ -28,7 +28,7 @@ func (location *Location) String() string {
 	var stringBuilder strings.Builder
 
 	// Address components to join with comma.
-	components := [5]string{
+	components := [...]string{
 		location.Country,
 		location.State,
 		location.City,
