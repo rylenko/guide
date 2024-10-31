@@ -1,4 +1,4 @@
-go 1.23
+go 1.23.0
 
 use (
 	./cmd/guide
@@ -9,4 +9,5 @@ use (
 	./internal/launch
 	./internal/network
 	./internal/std_network
+	./internal/weather
 )

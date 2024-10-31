@@ -1,21 +1,23 @@
-package gh_globe
+package gh_geocode
 
 import (
 	"fmt"
 	"strings"
 
+	"github.com/rylenko/guide/internal/geocode"
+	"github.com/rylenko/guide/internal/gh_globe"
 	"github.com/rylenko/guide/internal/globe"
 )
 
 // Data transfer object graphhopper's API location representation, implements
-// globe's location interface.
+// geocode location interface.
 type Location struct {
-	City string        `json:"city"`
-	Country string     `json:"country"`
-	HouseNumber string `json:"housenumber"`
-	State string       `json:"state"`
-	Street string      `json:"street"`
-	PointValue Point   `json:"point"`
+	City string               `json:"city"`
+	Country string            `json:"country"`
+	HouseNumber string        `json:"housenumber"`
+	State string              `json:"state"`
+	Street string             `json:"street"`
+	PointValue gh_globe.Point `json:"point"`
 }
 
 // Point of the location.
@@ -52,4 +54,4 @@ func (location *Location) String() string {
 }
 
 // Ensure that location DTO implements location interface.
-var _ globe.Location = (*Location)(nil)
+var _ geocode.Location = (*Location)(nil)

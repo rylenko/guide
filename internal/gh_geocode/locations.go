@@ -1,4 +1,4 @@
-package gh_globe
+package gh_geocode
 
 // Data transfer object of graphhopper's API locations representation.
 type Locations struct {

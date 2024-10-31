@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/rylenko/guide/internal/geocode"
-	"github.com/rylenko/guide/internal/globe"
 )
 
 func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
@@ -77,7 +76,7 @@ func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 func suggestLocations(
 		input *bufio.Reader,
 		output *os.File,
-		locations []globe.Location) (globe.Location, error) {
+		locations []geocode.Location) (geocode.Location, error) {
 	// Suggest locations to select.
 	for i, location := range locations {
 		fmt.Fprintf(output, "[%d] %s.\n", i, location.String())

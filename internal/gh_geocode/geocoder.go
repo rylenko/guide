@@ -6,8 +6,6 @@ import (
 	"net/url"
 
 	"github.com/rylenko/guide/internal/geocode"
-	"github.com/rylenko/guide/internal/gh_globe"
-	"github.com/rylenko/guide/internal/globe"
 	"github.com/rylenko/guide/internal/network"
 )
 
@@ -20,7 +18,7 @@ type Geocoder struct {
 }
 
 // Geocode sends a request to the graphhopper geocoder and receives a response.
-func (geocoder *Geocoder) Geocode(query string) ([]globe.Location, error) {
+func (geocoder *Geocoder) Geocode(query string) ([]geocode.Location, error) {
 	// Sends request to the API endpoint to receive geocoder response.
 	response, err := geocoder.sendRequest(query)
 	if err != nil {
@@ -37,7 +35,7 @@ func (geocoder *Geocoder) Geocode(query string) ([]globe.Location, error) {
 	decoder := json.NewDecoder(response.Body())
 
 	// Decode JSON response body into DTO.
-	var locations gh_globe.Locations
+	var locations Locations
 	if err := decoder.Decode(&locations); err != nil {
 		return nil, fmt.Errorf("json Decode(): %w", err)
 	}
@@ -45,7 +43,7 @@ func (geocoder *Geocoder) Geocode(query string) ([]globe.Location, error) {
 	// Convert slice of location DTO to location interface.
 	//
 	// TODO: optimization.
-	locationInterfaces := make([]globe.Location, len(locations.Slice))
+	locationInterfaces := make([]geocode.Location, len(locations.Slice))
 	for i, location := range locations.Slice {
 		locationInterfaces[i] = &location
 	}
