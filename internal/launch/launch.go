@@ -12,13 +12,17 @@ import (
 	"github.com/rylenko/guide/internal/geocode"
 )
 
-func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
+func Launch(
+		geocoder geocode.Geocoder,
+		locationStringer LocationStringer,
+		input,
+		output *os.File) error {
 	// Create standard input reader.
-	placeReader := bufio.NewReader(input)
+	bufInput := bufio.NewReader(input)
 
 	for {
 		// Try to read place input.
-		place, err := readPlace(placeReader, output)
+		place, err := readPlace(bufInput, output)
 		if errors.Is(err, io.EOF) {
 			break
 		}
@@ -38,7 +42,8 @@ func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
 		}
 
 		// Try to suggest received locations to the user.
-		selectedLocation, err := suggestLocations(placeReader, output, locations)
+		selectedLocation, err := suggestLocations(
+			locations, locationStringer, output, bufInput)
 		if errors.Is(err, io.EOF) {
 			break
 		}
@@ -46,7 +51,10 @@ func Launch(geocoder geocode.Geocoder, input, output *os.File) error {
 			return fmt.Errorf("suggest locations of %s: %w", place, err)
 		}
 
-		fmt.Fprintf(output, "\nSelected location: %s.\n\n", selectedLocation.String())
+		fmt.Fprintf(
+			output,
+			"\nSelected location: %s.\n\n",
+			locationStringer.String(selectedLocation))
 	}
 
 	return nil
@@ -74,12 +82,13 @@ func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 
 // Prints all locations to the output to further select the desired location.
 func suggestLocations(
-		input *bufio.Reader,
+		locations []geocode.Location,
+		stringer LocationStringer,
 		output *os.File,
-		locations []geocode.Location) (geocode.Location, error) {
+		input *bufio.Reader) (geocode.Location, error) {
 	// Suggest locations to select.
 	for i, location := range locations {
-		fmt.Fprintf(output, "[%d] %s.\n", i, location.String())
+		fmt.Fprintf(output, "[%d] %s.\n", i, stringer.String(location))
 	}
 	fmt.Fprintln(output)
 

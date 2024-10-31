@@ -1,10 +1,6 @@
 package gh_globe
 
-import (
-	"fmt"
-
-	"github.com/rylenko/guide/internal/globe"
-)
+import "github.com/rylenko/guide/internal/globe"
 
 // Data transfer object of graphhopper's API point representation, implements
 // globe's point interface.
@@ -21,11 +17,6 @@ func (point *Point) Lat() float64 {
 // Longitude of the point DTO.
 func (point *Point) Long() float64 {
 	return point.Longitude
-}
-
-// String representation of the point.
-func (point *Point) String() string {
-	return fmt.Sprint(point.Latitude, ", ", point.Longitude)
 }
 
 // Ensure that point DTO implements point interface.

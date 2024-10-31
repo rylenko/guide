@@ -1,9 +1,6 @@
 package gh_geocode
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/rylenko/guide/internal/geocode"
 	"github.com/rylenko/guide/internal/gh_globe"
 	"github.com/rylenko/guide/internal/globe"
@@ -12,12 +9,28 @@ import (
 // Data transfer object graphhopper's API location representation, implements
 // geocode location interface.
 type Location struct {
-	City string               `json:"city"`
-	Country string            `json:"country"`
-	HouseNumber string        `json:"housenumber"`
-	State string              `json:"state"`
-	Street string             `json:"street"`
+	CityValue string          `json:"city"`
+	CountryValue string       `json:"country"`
+	HouseNumberValue string   `json:"housenumber"`
+	StateValue string         `json:"state"`
+	StreetValue string        `json:"street"`
 	PointValue gh_globe.Point `json:"point"`
+}
+
+
+// City of the location.
+func (location *Location) City() string {
+	return location.CityValue
+}
+
+// City of the location.
+func (location *Location) Country() string {
+	return location.CountryValue
+}
+
+// House number of the location.
+func (location *Location) HouseNumber() string {
+	return location.HouseNumberValue
 }
 
 // Point of the location.
@@ -25,32 +38,14 @@ func (location *Location) Point() globe.Point {
 	return &location.PointValue
 }
 
-// String representation of the location.
-func (location *Location) String() string {
-	var stringBuilder strings.Builder
+// State of the location.
+func (location *Location) State() string {
+	return location.StateValue
+}
 
-	// Address components to join with comma.
-	components := [...]string{
-		location.Country,
-		location.State,
-		location.City,
-		location.Street,
-		location.HouseNumber}
-
-	// Grow string builder to reduce reallocations.
-	stringBuilder.Grow(len(components))
-
-	// Append address components to the string builder.
-	for _, component := range components {
-		if component != "" {
-			fmt.Fprint(&stringBuilder, component, ", ")
-		}
-	}
-
-	// Append address point to the string builder.
-	fmt.Fprintf(&stringBuilder, "[%s]", location.PointValue.String())
-
-	return stringBuilder.String()
+// State of the location.
+func (location *Location) Street() string {
+	return location.StreetValue
 }
 
 // Ensure that location DTO implements location interface.

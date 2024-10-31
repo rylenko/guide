@@ -20,13 +20,17 @@ func main() {
 	// TODO: Support language parameter.
 	geocoder := gh_geocode.NewGeocoder(requester, GHAPIKey)
 
+	// Create a new instance of geocoder location stringer.
+	locationStringer := launch.NewCommaLocationStringer()
+
 	// Create a new instance of openweathermap fetcher.
 	//
 	// TODO: Support language parameter.
 	// weatherFetcher := owm_weather.NewFetcher(requester, OWMAPIKey)
 
 	// Launch application using interface instances and standard IO.
-	if err := launch.Launch(geocoder, os.Stdin, os.Stdout); err != nil {
+	err := launch.Launch(geocoder, locationStringer, os.Stdin, os.Stdout)
+	if err != nil {
 		log.Fatal("Failed to launch: ", err)
 	}
 }
