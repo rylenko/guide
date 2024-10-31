@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 
@@ -15,8 +14,8 @@ import (
 func Launch(
 		geocoder geocode.Geocoder,
 		locationStringer LocationStringer,
-		input,
-		output *os.File) error {
+		input io.Reader,
+		output io.Writer) error {
 	// Create standard input reader.
 	bufInput := bufio.NewReader(input)
 
@@ -61,7 +60,7 @@ func Launch(
 }
 
 // Prompts for and reads place input until a non-blank place is entered.
-func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
+func readPlace(reader *bufio.Reader, output io.Writer) (string, error) {
 	for {
 		// Print the place prompt to the user.
 		fmt.Fprint(output, "Enter place to guide: ")
@@ -84,7 +83,7 @@ func readPlace(reader *bufio.Reader, output *os.File) (string, error) {
 func suggestLocations(
 		locations []geocode.Location,
 		stringer LocationStringer,
-		output *os.File,
+		output io.Writer,
 		input *bufio.Reader) (geocode.Location, error) {
 	// Suggest locations to select.
 	for i, location := range locations {
