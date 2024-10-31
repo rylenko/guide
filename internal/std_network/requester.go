@@ -1,7 +1,6 @@
 package std_network
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/rylenko/guide/internal/network"
@@ -16,7 +15,7 @@ func (requester *Requester) Get(url string) (network.Response, error) {
 	// Send GET request using standard HTTP library.
 	response, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("http.Get(\"%s\"): %w", err)
+		return nil, err
 	}
 
 	return NewResponse(response), nil

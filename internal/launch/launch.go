@@ -9,11 +9,14 @@ import (
 	"strings"
 
 	"github.com/rylenko/guide/internal/geocode"
+	"github.com/rylenko/guide/internal/weather"
 )
 
 func Launch(
 		geocoder geocode.Geocoder,
 		locationStringer LocationStringer,
+		weatherFetcher weather.Fetcher,
+		weatherStringer WeatherStringer,
 		input io.Reader,
 		output io.Writer) error {
 	// Create standard input reader.
@@ -32,7 +35,7 @@ func Launch(
 		// Try to geocode input place.
 		locations, err := geocoder.Geocode(place)
 		if err != nil {
-			return fmt.Errorf("Geocode(\"%s\"): %w", place, err)
+			return fmt.Errorf("geocode \"%s\": %w", place, err)
 		}
 		// Prompt another place if no locations found.
 		if len(locations) == 0 {
@@ -50,10 +53,13 @@ func Launch(
 			return fmt.Errorf("suggest locations of %s: %w", place, err)
 		}
 
-		fmt.Fprintf(
-			output,
-			"\nSelected location: %s.\n\n",
-			locationStringer.String(selectedLocation))
+		// Try to get location weather.
+		weather, err := weatherFetcher.Fetch(selectedLocation.Point())
+		if err != nil {
+			return fmt.Errorf("fetch weather at %v: %w", selectedLocation.Point(), err)
+		}
+		fmt.Fprintln(output, "\nWeather: ", weatherStringer.String(weather), ".\n")
+
 	}
 
 	return nil
@@ -68,7 +74,7 @@ func readPlace(reader *bufio.Reader, output io.Writer) (string, error) {
 		// Try to read place to guide from input.
 		place, err := reader.ReadString('\n')
 		if err != nil {
-			return "", fmt.Errorf("ReadString('\n'): %w", err)
+			return "", fmt.Errorf("read string until '\n': %w", err)
 		}
 
 		// Trim newline character from input place and return it if non-blank.
@@ -98,7 +104,7 @@ func suggestLocations(
 		// Read selected location index as string.
 		locationIndexStr, err := input.ReadString('\n')
 		if err != nil {
-			return nil, fmt.Errorf("ReadString('\n'): %w", err)
+			return nil, fmt.Errorf("read string until '\n': %w", err)
 		}
 		// Trim newline character from index input.
 		locationIndexStr = strings.TrimSuffix(locationIndexStr, "\n")

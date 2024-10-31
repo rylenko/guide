@@ -6,8 +6,8 @@ import (
 	"github.com/rylenko/guide/internal/globe"
 )
 
-// Data transfer object graphhopper's API location representation, implements
-// geocode location interface.
+// Data transfer object of graphhopper's API location representation,
+// implements geocode location interface.
 type Location struct {
 	CityValue string          `json:"city"`
 	CountryValue string       `json:"country"`

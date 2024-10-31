@@ -51,5 +51,5 @@ func NewCommaLocationStringer() *CommaLocationStringer {
 	return &CommaLocationStringer{builder: builder}
 }
 
-// Ensure that location DTO implements location interface.
+// Ensure that comma location stringer implements location stringer interface.
 var _ LocationStringer = (*CommaLocationStringer)(nil)

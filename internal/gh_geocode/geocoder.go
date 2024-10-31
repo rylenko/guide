@@ -11,7 +11,7 @@ import (
 
 const endpointURL string = "https://graphhopper.com/api/1/geocode"
 
-// Geocoder is implementation of geocoder interface via graphhopper.com API.
+// Geocoder is implementation of geocoder interface via graphhopper API.
 type Geocoder struct {
 	apiKey string
 	requester network.Requester
@@ -22,13 +22,13 @@ func (geocoder *Geocoder) Geocode(query string) ([]geocode.Location, error) {
 	// Sends request to the API endpoint to receive geocoder response.
 	response, err := geocoder.sendRequest(query)
 	if err != nil {
-		return nil, fmt.Errorf("sendRequest(\"%s\"): %w", query, err)
+		return nil, fmt.Errorf("send request: %w", err)
 	}
 	defer response.Body().Close()
 
 	// Check that response contain errors.
 	if err := response.Error(); err != nil {
-		return nil, fmt.Errorf("response error with query \"%s\": %w", query, err)
+		return nil, fmt.Errorf("response error: %w", err)
 	}
 
 	// Create new decoder to decode response's JSON.
@@ -37,7 +37,7 @@ func (geocoder *Geocoder) Geocode(query string) ([]geocode.Location, error) {
 	// Decode JSON response body into DTO.
 	var locations Locations
 	if err := decoder.Decode(&locations); err != nil {
-		return nil, fmt.Errorf("json Decode(): %w", err)
+		return nil, fmt.Errorf("json decode: %w", err)
 	}
 
 	// Convert slice of location DTO to location interface.
@@ -74,18 +74,18 @@ func (geocoder *Geocoder) sendRequest(
 	// Build URL with accepted query.
 	url, err := geocoder.buildURL(query)
 	if err != nil {
-		return nil, fmt.Errorf("buildURL(\"%s\"): %w", query, err)
+		return nil, fmt.Errorf("build URL: %w", err)
 	}
 
 	// Send get request to built URL and receive a response.
 	response, err := geocoder.requester.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("requester.Get(\"%s\"): %w", url, err)
+		return nil, fmt.Errorf("send get request: %w", url, err)
 	}
 	return response, nil
 }
 
-// Creates a new instance of graphhopper geocoder using passed apikey.
+// Creates a new instance of graphhopper geocoder.
 func NewGeocoder(requester network.Requester, apiKey string) *Geocoder {
 	return &Geocoder{
 		apiKey: apiKey,

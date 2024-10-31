@@ -8,6 +8,7 @@ use (
 	./internal/globe
 	./internal/launch
 	./internal/network
+	./internal/owm_weather
 	./internal/std_network
 	./internal/weather
 )

@@ -24,14 +24,10 @@ func (response *Response) Body() io.ReadCloser {
 
 // Checks that response contains HTTP error code.
 func (response *Response) Error() error {
-	switch response.statusCode {
-	case http.StatusOK:
+	if response.statusCode < 400 {
 		return nil
-	case http.StatusUnauthorized:
-		return errors.New("invalid API key")
-	default:
-		return errors.New(http.StatusText(response.statusCode))
 	}
+	return errors.New(http.StatusText(response.statusCode))
 }
 
 // Creates a new instance of response using passed standard HTTP response.
