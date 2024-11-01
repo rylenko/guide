@@ -9,6 +9,7 @@ use (
 	./internal/launch
 	./internal/network
 	./internal/owm_weather
+	./internal/showplace
 	./internal/std_network
 	./internal/weather
 )
