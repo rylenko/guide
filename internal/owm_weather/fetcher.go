@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	endpointURL string = "https://openweathermap.org/data/2.5/weather"
+	endpointURL string = "https://api.openweathermap.org/data/2.5/weather"
 	unitsQueryParamValue string = "metric"
 )
 

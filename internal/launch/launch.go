@@ -12,6 +12,10 @@ import (
 	"github.com/rylenko/guide/internal/weather"
 )
 
+const placeInputSeparator string = "------------------------------------------"
+
+// TODO: split into small functions
+// TODO: handle print errors
 func Launch(
 		geocoder geocode.Geocoder,
 		locationStringer LocationStringer,
@@ -58,8 +62,10 @@ func Launch(
 		if err != nil {
 			return fmt.Errorf("fetch weather at %v: %w", selectedLocation.Point(), err)
 		}
-		fmt.Fprintln(output, "\nWeather: ", weatherStringer.String(weather), ".\n")
+		fmt.Fprintf(output, "Weather: %s.\n", weatherStringer.String(weather))
 
+		// Print separator between places for readability.
+		fmt.Printf("\n%s\n\n", placeInputSeparator)
 	}
 
 	return nil
@@ -69,7 +75,7 @@ func Launch(
 func readPlace(reader *bufio.Reader, output io.Writer) (string, error) {
 	for {
 		// Print the place prompt to the user.
-		fmt.Fprint(output, "Enter place to guide: ")
+		fmt.Fprint(output, ">>> Enter place to guide: ")
 
 		// Try to read place to guide from input.
 		place, err := reader.ReadString('\n')
@@ -92,6 +98,7 @@ func suggestLocations(
 		output io.Writer,
 		input *bufio.Reader) (geocode.Location, error) {
 	// Suggest locations to select.
+	fmt.Fprintln(output, "\nSuggestions:")
 	for i, location := range locations {
 		fmt.Fprintf(output, "[%d] %s.\n", i, stringer.String(location))
 	}
@@ -99,7 +106,7 @@ func suggestLocations(
 
 	for {
 		// Prompt location input.
-		fmt.Fprint(output, "Select location using its index: ")
+		fmt.Fprint(output, ">>> Select location using its index: ")
 
 		// Read selected location index as string.
 		locationIndexStr, err := input.ReadString('\n')
@@ -116,6 +123,12 @@ func suggestLocations(
 			continue
 		}
 
-		return locations[locationIndex], nil
+		selectedLocation := locations[locationIndex]
+
+		// Print selected location to the user.
+		fmt.Fprintf(
+			output, "\nSelected location: %s.\n", stringer.String(selectedLocation))
+
+		return selectedLocation, nil
 	}
 }

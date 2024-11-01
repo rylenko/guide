@@ -7,7 +7,7 @@ import (
 // Data transfer object of openweathermap's API weather representation,
 // implements weather interface.
 type Weather struct {
-	Header struct {
+	Headers []struct {
 		Type string `json:"main"`
 	} `json:"weather"`
 	Main struct {
@@ -31,7 +31,10 @@ func (weather *Weather) Temp() float64 {
 
 // Type of the weather.
 func (weather *Weather) Type() string {
-	return weather.Header.Type
+	if len(weather.Headers) == 0 {
+		return ""
+	}
+	return weather.Headers[0].Type
 }
 
 // Wind speed of the weather.

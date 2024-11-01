@@ -80,7 +80,7 @@ func (geocoder *Geocoder) sendRequest(
 	// Send get request to built URL and receive a response.
 	response, err := geocoder.requester.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("send get request: %w", url, err)
+		return nil, fmt.Errorf("send get request to %s: %w", url, err)
 	}
 	return response, nil
 }

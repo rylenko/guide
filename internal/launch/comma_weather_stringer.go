@@ -15,7 +15,7 @@ type CommaWeatherStringer struct {}
 // String representation of the location.
 func (stringer *CommaWeatherStringer) String(weather weather.Weather) string {
 	return fmt.Sprintf(
-		"%s, %f℃, humidity %d%, wind %f m/s",
+		"%s, %.1f℃, humidity %d%%, wind %.1f m/s",
 		weather.Type(),
 		weather.Temp(),
 		weather.Humidity(),
