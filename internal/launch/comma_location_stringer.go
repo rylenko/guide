@@ -7,10 +7,12 @@ import (
 	"github.com/rylenko/guide/internal/geocode"
 )
 
-const builderInitialCapacity int = 1024
+const builderInitialCap int = 1024
 
 // CommaLocationStringer implements LocationStringer interface, it strings
 // location with comma separator between location components.
+//
+// The zero value is ready to use.
 type CommaLocationStringer struct {
 	builder strings.Builder
 }
@@ -18,6 +20,11 @@ type CommaLocationStringer struct {
 // String representation of the location.
 func (stringer *CommaLocationStringer) String(
 		location geocode.Location) string {
+	// Grow to initial capacity to reduce allocations count.
+	if stringer.builder.Cap() < builderInitialCap {
+		stringer.builder.Grow(builderInitialCap - stringer.builder.Cap())
+	}
+
 	// Reset previous location string.
 	stringer.builder.Reset()
 
@@ -40,15 +47,6 @@ func (stringer *CommaLocationStringer) String(
 	fmt.Fprintf(&stringer.builder, "[%f, %f]", point.Lat(), point.Long())
 
 	return stringer.builder.String()
-}
-
-// Creates a new instance of comma location stringer.
-func NewCommaLocationStringer() *CommaLocationStringer {
-	// Create a new instance of string builder and grow its capacity.
-	var builder strings.Builder
-	builder.Grow(builderInitialCapacity)
-
-	return &CommaLocationStringer{builder: builder}
 }
 
 // Ensure that comma location stringer implements location stringer interface.

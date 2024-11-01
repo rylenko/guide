@@ -24,7 +24,7 @@ func main() {
 	// TODO: Support language parameter.
 	geocoder := gh_geocode.NewGeocoder(requester, GHAPIKey)
 	// Create a new instance of geocoder location stringer.
-	locationStringer := launch.NewCommaLocationStringer()
+	var locationStringer launch.CommaLocationStringer
 
 	// Create a new instance of openweathermap fetcher.
 	//
@@ -36,7 +36,7 @@ func main() {
 	// Launch application using interface instances and standard IO.
 	err := launch.Launch(
 		geocoder,
-		locationStringer,
+		&locationStringer,
 		weatherFetcher,
 		&weatherStringer,
 		os.Stdin,

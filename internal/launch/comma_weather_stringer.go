@@ -8,6 +8,8 @@ import (
 
 // CommaWeatherStringer implements WeatherStringer interface, it strings
 // weather with comma separator between weather components.
+//
+// The zero value is ready to use.
 type CommaWeatherStringer struct {}
 
 // String representation of the location.
