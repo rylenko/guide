@@ -9,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/rylenko/guide/internal/geocode"
+	"github.com/rylenko/guide/internal/globe"
 	"github.com/rylenko/guide/internal/weather"
 )
 
 const placeInputSeparator string = "------------------------------------------"
 
 // TODO: split into small functions
-// TODO: handle print errors
 func Launch(
 		geocoder geocode.Geocoder,
 		locationStringer LocationStringer,
@@ -23,27 +23,23 @@ func Launch(
 		weatherStringer WeatherStringer,
 		input io.Reader,
 		output io.Writer) error {
-	// Create standard input reader.
+	// Create standard input reader to read input efficiently.
 	bufInput := bufio.NewReader(input)
 
 	for {
 		// Try to read place input.
-		place, err := readPlace(bufInput, output)
+		locations, err := readPlaceAndGeocode(bufInput, output, geocoder)
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("read place input: %w", err)
-		}
-
-		// Try to geocode input place.
-		locations, err := geocoder.Geocode(place)
-		if err != nil {
-			return fmt.Errorf("geocode \"%s\": %w", place, err)
+			return fmt.Errorf("read place and geocode: %w", err)
 		}
 		// Prompt another place if no locations found.
 		if len(locations) == 0 {
-			fmt.Fprintln(output, "Locations not found.\n")
+			if _, err := fmt.Fprintln(output, "Locations not found.\n"); err != nil {
+				return fmt.Errorf("print locations not found: %w", err)
+			}
 			continue
 		}
 
@@ -54,40 +50,76 @@ func Launch(
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("suggest locations of %s: %w", place, err)
+			return fmt.Errorf("suggest locations: %w", err)
 		}
 
-		// Try to get location weather.
-		weather, err := weatherFetcher.Fetch(selectedLocation.Point())
+		// Try to fetch and print weather in selected location.
+		err = fetchWeather(
+			weatherFetcher, selectedLocation.Point(), weatherStringer, output)
 		if err != nil {
-			return fmt.Errorf("fetch weather at %v: %w", selectedLocation.Point(), err)
+			return fmt.Errorf(
+				"fetch weather for %s: %w", locationStringer.String(selectedLocation), err)
 		}
-		fmt.Fprintf(output, "Weather: %s.\n", weatherStringer.String(weather))
 
 		// Print separator between places for readability.
-		fmt.Printf("\n%s\n\n", placeInputSeparator)
+		if _, err := fmt.Printf("\n%s\n\n", placeInputSeparator); err != nil {
+			return fmt.Errorf("print place input separator: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// Fetches and prints weather in the passed point.
+func fetchWeather(
+		fetcher weather.Fetcher,
+		point globe.Point,
+		stringer WeatherStringer,
+		output io.Writer) error {
+	// Try to fetch weather using accepted point.
+	weather, err := fetcher.Fetch(point)
+	if err != nil {
+		return fmt.Errorf("fetch weather at %v: %w", point, err)
+	}
+
+	// Try to print weather string to the output.
+	weatherString := stringer.String(weather)
+	_, err = fmt.Fprintf(output, "Weather: %s.\n", weatherString)
+	if err != nil {
+		return fmt.Errorf("print weather %s: %w", weatherString, err)
 	}
 
 	return nil
 }
 
 // Prompts for and reads place input until a non-blank place is entered.
-func readPlace(reader *bufio.Reader, output io.Writer) (string, error) {
+func readPlaceAndGeocode(
+		reader *bufio.Reader,
+		output io.Writer,
+		geocoder geocode.Geocoder) ([]geocode.Location, error) {
 	for {
 		// Print the place prompt to the user.
-		fmt.Fprint(output, ">>> Enter place to guide: ")
+		if _, err := fmt.Fprint(output, ">>> Enter place to guide: "); err != nil {
+			return nil, fmt.Errorf("print place prompt: %w", err)
+		}
 
 		// Try to read place to guide from input.
 		place, err := reader.ReadString('\n')
 		if err != nil {
-			return "", fmt.Errorf("read string until '\n': %w", err)
+			return nil, fmt.Errorf("read string until '\n': %w", err)
+		}
+		// ReadString reads leaves newline at the end so we need to trim it.
+		place = strings.TrimSuffix(place, "\n")
+		if place == "" {
+			continue
 		}
 
-		// Trim newline character from input place and return it if non-blank.
-		place = strings.TrimSuffix(place, "\n")
-		if place != "" {
-			return place, nil
+		// Try to geocode input place.
+		locations, err := geocoder.Geocode(place)
+		if err != nil {
+			return nil, fmt.Errorf("geocode \"%s\": %w", place, err)
 		}
+		return locations, nil
 	}
 }
 
@@ -98,15 +130,27 @@ func suggestLocations(
 		output io.Writer,
 		input *bufio.Reader) (geocode.Location, error) {
 	// Suggest locations to select.
-	fmt.Fprintln(output, "\nSuggestions:")
-	for i, location := range locations {
-		fmt.Fprintf(output, "[%d] %s.\n", i, stringer.String(location))
+	if _, err := fmt.Fprintln(output, "\nSuggestions:"); err != nil {
+		return nil, fmt.Errorf("print suggestions header: %w", err)
 	}
-	fmt.Fprintln(output)
+	for i, location := range locations {
+		locationString := stringer.String(location)
+
+		_, err := fmt.Fprintf(output, "[%d] %s.\n", i, locationString)
+		if err != nil {
+			return nil, fmt.Errorf("print location %s: %w", locationString, err)
+		}
+	}
+	if _, err := fmt.Fprintln(output); err != nil {
+		return nil, fmt.Errorf("print newline after suggestions: %w", err)
+	}
 
 	for {
 		// Prompt location input.
-		fmt.Fprint(output, ">>> Select location using its index: ")
+		_, err := fmt.Fprint(output, ">>> Select location using its index: ")
+		if err != nil {
+			return nil, fmt.Errorf("print location selection prompt: %w", err)
+		}
 
 		// Read selected location index as string.
 		locationIndexStr, err := input.ReadString('\n')
@@ -119,15 +163,23 @@ func suggestLocations(
 		// Try to convert input line to location index integer.
 		locationIndex, err := strconv.Atoi(locationIndexStr)
 		if err != nil || locationIndex < 0 || len(locations) <= locationIndex {
-			fmt.Fprintln(output, "Invalid index.")
+			if _, err := fmt.Fprintln(output, "Invalid location index."); err != nil {
+				return nil, fmt.Errorf("print invalid location index: %w", err)
+			}
+
 			continue
 		}
 
 		selectedLocation := locations[locationIndex]
 
 		// Print selected location to the user.
-		fmt.Fprintf(
-			output, "\nSelected location: %s.\n", stringer.String(selectedLocation))
+		selectedLocationString := stringer.String(selectedLocation)
+		_, err = fmt.Fprintf(
+			output, "\nSelected location: %s.\n", selectedLocationString)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"print selected location %s: %w", selectedLocationString, err)
+		}
 
 		return selectedLocation, nil
 	}
